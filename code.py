@@ -81,12 +81,20 @@ print("Connecting to MQTT...")
 mqtt_client.connect()
 
 while True:
+    # Poll the message queue
+    mqtt_client.loop(timeout=1)
+    
     curr_amount = getAmountOfBottles()
     
     if prev_amount != curr_amount:
         print(f"Amount of bottles: {curr_amount}")
-        mqtt_client.publish(feed, curr_amount)
-        
-    prev_amount = curr_amount
+        try:
+            mqtt_client.publish(feed, curr_amount)
+            prev_amount = curr_amount
+        except:
+            print("Oepsie poepsie, iets is stukkiewukkie...")
+            wifi.reset()
+            mqtt_client.reconnect()
+            continue
 
     time.sleep(1) # sleep for debounce
